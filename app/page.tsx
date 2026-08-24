@@ -1,136 +1,74 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 
-function Shell({
-  title,
-  subtitle,
-  badge = "Portfolio demo · local-only",
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  badge?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-black dark:text-zinc-100">
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <header className="mb-8">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">{badge}</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">{title}</h1>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">{subtitle}</p>
-        </header>
-        {children}
-        <footer className="mt-10 border-t border-zinc-200 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
-          Honest demo: no multi-tenant backend. State (if any) stays in this browser.
-        </footer>
-      </div>
-    </div>
-  );
-}
+type Issue = { id: string; date: string; title: string; dek: string; read: string; section: string; note: string };
 
-function Button({
-  children,
-  onClick,
-  variant = "primary",
-  disabled,
-  type = "button",
-  className = "",
-}: {
-  children: ReactNode;
-  onClick?: () => void;
-  variant?: "primary" | "secondary" | "ghost" | "danger";
-  disabled?: boolean;
-  type?: "button" | "submit";
-  className?: string;
-}) {
-  const base =
-    "inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-50 " +
-    className;
-  const styles =
-    variant === "primary"
-      ? "bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900"
-      : variant === "secondary"
-        ? "bg-white text-zinc-900 ring-1 ring-zinc-200 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-700"
-        : variant === "danger"
-          ? "bg-red-600 text-white hover:bg-red-500"
-          : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900";
-  return (
-    <button type={type} disabled={disabled} onClick={onClick} className={`${base} ${styles}`}>
-      {children}
-    </button>
-  );
-}
-
-const inputClass =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-950";
-
-function useLocalStorage<T>(key: string, initial: T) {
-  const [value, setValue] = useState<T>(initial);
-  const [ready, setReady] = useState(false);
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw != null) setValue(JSON.parse(raw) as T);
-    } catch {
-      /* ignore */
-    }
-    setReady(true);
-  }, [key]);
-  useEffect(() => {
-    if (!ready) return;
-    localStorage.setItem(key, JSON.stringify(value));
-  }, [key, value, ready]);
-  return [value, setValue] as const;
-}
-
-function uid() {
-  return crypto.randomUUID();
-}
-
-async function copyText(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-
-type Item = { id: string; title: string; category: string; summary: string; meta?: string };
-const ITEMS: Item[] = [{"id": "1", "title": "#12 Shipping week", "category": "Issue", "summary": "Utilities + mini-apps.", "meta": "Aug 2026"}];
-const CATS = ["Issue"];
+const ISSUES: Issue[] = [
+  { id: "12", date: "16 AUG 2026", title: "Shipping week", dek: "Utilities + mini-apps.", read: "06 MIN", section: "Issue", note: "A small dispatch on making useful things visible: fewer claims, clearer boundaries, and five tools that do one job well." },
+  { id: "11", date: "02 AUG 2026", title: "The quiet backlog", dek: "What deserves a second pass.", read: "08 MIN", section: "Essay", note: "An inventory is only useful when it changes what gets opened next. This issue follows the trail from list to decision." },
+  { id: "10", date: "19 JUL 2026", title: "Proof before polish", dek: "A field note on product truth.", read: "05 MIN", section: "Note", note: "Before a surface gets a new coat of paint, name what it actually lets someone do. The rest is direction." },
+];
+const SECTIONS = ["All", "Issue", "Essay", "Note"] as const;
 
 export default function Home() {
-  const [q, setQ] = useState("");
-  const [cat, setCat] = useState("All");
-  const list = ITEMS.filter(
-    (i) =>
-      (cat === "All" || i.category === cat) &&
-      (i.title + i.summary + i.category).toLowerCase().includes(q.toLowerCase())
-  );
+  const [query, setQuery] = useState("");
+  const [section, setSection] = useState<(typeof SECTIONS)[number]>("All");
+  const [selectedId, setSelectedId] = useState(ISSUES[0].id);
+  const visible = useMemo(() => ISSUES.filter((issue) => {
+    const text = `${issue.title} ${issue.dek} ${issue.section}`.toLowerCase();
+    return (section === "All" || issue.section === section) && text.includes(query.toLowerCase());
+  }), [query, section]);
+  const selected = ISSUES.find((issue) => issue.id === selectedId) ?? visible[0] ?? ISSUES[0];
+
   return (
-    <Shell title="Newsletter Archive" subtitle="Past issues index.">
-      <div className="mb-4 flex flex-wrap gap-2">
-        <input className={`${inputClass} max-w-sm`} placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
-        {["All", ...CATS].map((c) => (
-          <Button key={c} variant={cat === c ? "primary" : "secondary"} onClick={() => setCat(c)}>
-            {c}
-          </Button>
-        ))}
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {list.map((i) => (
-          <article key={i.id} className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-            <div className="text-xs uppercase tracking-wide text-zinc-500">{i.category}</div>
-            <h2 className="mt-1 font-medium">{i.title}</h2>
-            <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{i.summary}</p>
-            {i.meta ? <p className="mt-3 text-xs text-zinc-500">{i.meta}</p> : null}
+    <main className="dispatch-shell">
+      <div className="dispatch-frame">
+        <header className="dispatch-topbar">
+          <a className="masthead" href="https://bookchaowalit.com" aria-label="Bookchaowalit home">THE / LETTER</a>
+          <span>ARCHIVE OF SMALL SIGNALS</span>
+          <span>VOL. 03 / {ISSUES.length} ISSUES</span>
+        </header>
+
+        <section className="dispatch-intro">
+          <div>
+            <h1>A few things<br /><em>worth sending.</em></h1>
+            <p>A local issue archive for notes on building, thinking, and shipping small useful work.</p>
+          </div>
+          <div className="stamp" aria-hidden="true"><span>READ</span><b>03</b><span>LOCAL ARCHIVE</span></div>
+        </section>
+
+        <section className="archive-desk" aria-label="Newsletter archive">
+          <aside className="issue-index">
+            <div className="index-head"><span>ISSUE INDEX</span><span>{visible.length} FOUND</span></div>
+            <label className="archive-search"><span aria-hidden="true">⌕</span><span className="sr-only">Search issues</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the archive" /></label>
+            <div className="section-tabs" role="tablist" aria-label="Filter by section">
+              {SECTIONS.map((item) => <button key={item} type="button" role="tab" aria-selected={section === item} className={section === item ? "active" : ""} onClick={() => setSection(item)}>{item}</button>)}
+            </div>
+            <div className="issue-list">
+              {visible.length ? visible.map((issue) => (
+                <button key={issue.id} type="button" className={`issue-row${selected.id === issue.id ? " selected" : ""}`} onClick={() => setSelectedId(issue.id)} aria-pressed={selected.id === issue.id}>
+                  <span className="issue-number">{issue.id}</span>
+                  <span className="issue-row-copy"><small>{issue.date} / {issue.section}</small><strong>{issue.title}</strong><em>{issue.dek}</em></span>
+                  <span className="issue-arrow" aria-hidden="true">↗</span>
+                </button>
+              )) : <p className="empty-archive">Nothing filed under that search.</p>}
+            </div>
+          </aside>
+
+          <article className="reading-sheet">
+            <div className="sheet-meta"><span>SELECTED DISPATCH / {selected.date}</span><span>{selected.read}</span></div>
+            <div className="sheet-rule" />
+            <p className="sheet-section">{selected.section} / FIELD NOTE</p>
+            <h2>{selected.title}</h2>
+            <p className="sheet-dek">{selected.dek}</p>
+            <div className="sheet-body"><p>{selected.note}</p><p>Read this as an authored sample issue, not as a delivered newsletter. The archive is the interface: find a dispatch, open its shape, leave when the thought is clear.</p></div>
+            <div className="sheet-footer"><span>BOOKCHAOWALIT / THE LETTER</span><span>NO SUBSCRIPTION SERVICE ATTACHED</span></div>
           </article>
-        ))}
+        </section>
+
+        <footer className="dispatch-footer"><span>THE LETTER / LOCAL ARCHIVE</span><span>SEARCH · FILTER · READ</span></footer>
       </div>
-    </Shell>
+    </main>
   );
 }

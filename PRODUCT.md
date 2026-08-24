@@ -10,6 +10,13 @@ Portfolio repository under Book Dev. This brief records ownership and the
 current honest status so the nested tree is not an empty shell in the task
 system.
 
+## Current product truth
+
+This is a local archive index for a small newsletter. Search, issue/category
+filtering, and opening an issue reading sheet are the useful loop. It does not
+subscribe visitors, send email, fetch a remote archive, or claim delivery
+metrics.
+
 ## Runnable path
 
 See `README.md` for install and run instructions when present.
