@@ -1,25 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-
-type Issue = { id: string; date: string; title: string; dek: string; read: string; section: string; note: string };
-
-const ISSUES: Issue[] = [
-  { id: "12", date: "16 AUG 2026", title: "Shipping week", dek: "Utilities + mini-apps.", read: "06 MIN", section: "Issue", note: "A small dispatch on making useful things visible: fewer claims, clearer boundaries, and five tools that do one job well." },
-  { id: "11", date: "02 AUG 2026", title: "The quiet backlog", dek: "What deserves a second pass.", read: "08 MIN", section: "Essay", note: "An inventory is only useful when it changes what gets opened next. This issue follows the trail from list to decision." },
-  { id: "10", date: "19 JUL 2026", title: "Proof before polish", dek: "A field note on product truth.", read: "05 MIN", section: "Note", note: "Before a surface gets a new coat of paint, name what it actually lets someone do. The rest is direction." },
-];
-const SECTIONS = ["All", "Issue", "Essay", "Note"] as const;
+import { ISSUES, SECTIONS, filterIssues, pickSelected, type SectionFilter } from "@/lib/newsletter";
 
 export default function Home() {
   const [query, setQuery] = useState("");
-  const [section, setSection] = useState<(typeof SECTIONS)[number]>("All");
+  const [section, setSection] = useState<SectionFilter>("All");
   const [selectedId, setSelectedId] = useState(ISSUES[0].id);
-  const visible = useMemo(() => ISSUES.filter((issue) => {
-    const text = `${issue.title} ${issue.dek} ${issue.section}`.toLowerCase();
-    return (section === "All" || issue.section === section) && text.includes(query.toLowerCase());
-  }), [query, section]);
-  const selected = ISSUES.find((issue) => issue.id === selectedId) ?? visible[0] ?? ISSUES[0];
+  const visible = useMemo(() => filterIssues(ISSUES, section, query), [query, section]);
+  // Opens the first visible issue when a search or filter hides the selected one.
+  const selected = pickSelected(ISSUES, visible, selectedId);
 
   return (
     <main className="dispatch-shell">
