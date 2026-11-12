@@ -60,7 +60,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--red); outli
   .dispatch-intro p { max-width: 300px; }
   .stamp { width: 92px; height: 92px; }
   .stamp b { font-size: 24px; }
-  .stamp span { font-size: 7px; }
+  .stamp span { font-size: 12px; }
   .archive-desk { grid-template-columns: 1fr; }
   .reading-sheet { min-height: 490px; padding-left: 16px; padding-right: 16px; }
   .sheet-meta { margin-left: -16px; margin-right: -16px; padding-left: 16px; padding-right: 16px; }
