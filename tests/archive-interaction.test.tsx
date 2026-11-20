@@ -51,6 +51,7 @@ describe("archive search and sections", () => {
     click([...host.querySelectorAll("button")].find((b) => b.textContent === "Show all issues")!);
     expect(titles()).toHaveLength(3);
     expect(chip("All").getAttribute("aria-pressed")).toBe("true");
+    expect(document.activeElement).toBe($(".rs-search input"));
   });
 
   it("an empty archive says so", () => {

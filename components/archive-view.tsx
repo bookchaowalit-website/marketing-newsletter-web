@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { EmptyState, EntryList, ReaderHead, ResultCount, SearchForm } from "@/components/reader-shell";
 import { issueEntry, LetterFrame } from "@/components/newsletter-views";
 import { filterIssues, SECTIONS, sectionCounts, type Issue, type SectionFilter } from "@/lib/newsletter";
@@ -14,10 +14,13 @@ export function ArchiveView({ issues }: { issues: Issue[] }) {
   const counts = sectionCounts(matching);
   const shown = useMemo(() => filterIssues(matching, section, ""), [matching, section]);
   const q = query.trim();
+  const toolbar = useRef<HTMLDivElement>(null);
 
+  // "Show all issues" removes itself, so focus goes back to the search field (as Clear does, READER.md).
   function reset() {
     setQuery("");
     setSection("All");
+    toolbar.current?.querySelector<HTMLInputElement>(".rs-search input")?.focus();
   }
 
   return (
@@ -31,7 +34,7 @@ export function ArchiveView({ issues }: { issues: Issue[] }) {
         <EmptyState title="No issues yet">New issues appear here once they are written.</EmptyState>
       ) : (
         <>
-          <div className="rs-toolbar">
+          <div className="rs-toolbar" ref={toolbar}>
             <SearchForm label="Search issues" placeholder="Title, summary or section" value={query} onValueChange={setQuery} onClear={() => setQuery("")} />
             <div className="rs-chips" role="group" aria-label="Filter by section">
               <ul>
