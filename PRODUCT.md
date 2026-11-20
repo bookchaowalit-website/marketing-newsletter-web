@@ -46,3 +46,7 @@ A portfolio visitor who wants to see a calm editorial archive UI: search, a sect
 ## Boundaries
 
 - Browser-only apart from the stateless `/api/mcp` route.
+
+## Known limits
+
+- Going back to the archive with the "All issues" link from an issue page starts with an empty search and the All section, so a reader who opened an issue from search results has to search again (pre-existing; Codex review 2026-11-20, marketing-newsletter-web-c63310fd07.md).
