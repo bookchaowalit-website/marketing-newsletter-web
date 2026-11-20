@@ -50,3 +50,4 @@ A portfolio visitor who wants to see a calm editorial archive UI: search, a sect
 ## Known limits
 
 - Going back to the archive with the "All issues" link from an issue page starts with an empty search and the All section, so a reader who opened an issue from search results has to search again (pre-existing; Codex review 2026-11-20, marketing-newsletter-web-c63310fd07.md).
+- The section chips say "Issues", "Essays" and "Notes" while search matches the singular section names, so the names differ between the two filters; issue pages also inherit the archive's Open Graph title and description instead of their own (Codex review 2026-11-20, marketing-newsletter-web-5e341369cf.md).
